@@ -10,6 +10,7 @@ import markdown
 
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import File, Files
+from mkdocs.structure.nav import Section
 from mkdocs.structure.pages import Page, _ExtractTitleTreeprocessor, _RelativePathTreeprocessor
 from mkdocs.tests.base import dedent, tempdir
 
@@ -58,6 +59,18 @@ class PageTests(unittest.TestCase):
         self.assertEqual(pg.previous_page, None)
         self.assertEqual(pg.title, 'Foo')
         self.assertEqual(pg.toc, [])
+
+    def test_homepage_with_parent(self):
+        for filename in ('index.md', 'README.md'):
+            for use_directory_urls in (True, False):
+                with self.subTest(filename=filename, use_directory_urls=use_directory_urls):
+                    cfg = load_config(use_directory_urls=use_directory_urls)
+                    fl = File(filename, cfg.docs_dir, cfg.site_dir, cfg.use_directory_urls)
+                    pg = Page('Home', fl, cfg)
+                    pg.parent = Section('Home', [pg])
+                    self.assertFalse(pg.is_top_level)
+                    self.assertTrue(pg.is_index)
+                    self.assertTrue(pg.is_homepage)
 
     def test_nested_index_page(self):
         cfg = load_config(docs_dir=DOCS_DIR)

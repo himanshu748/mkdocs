@@ -35,6 +35,32 @@ class SiteNavigationTests(unittest.TestCase):
         self.assertEqual(len(site_navigation.pages), 2)
         self.assertEqual(repr(site_navigation.homepage), "Page(title='Home', url='/')")
 
+    def test_nested_homepage(self):
+        for filename in ('index.md', 'README.md'):
+            nav_configs = [
+                [{'Home': [filename, 'page2.md', 'sub1/index.md']}],
+                [{'Docs': [{'Home': [filename, 'page2.md', 'sub1/index.md']}]}],
+            ]
+            for nav_cfg in nav_configs:
+                for use_directory_urls in (True, False):
+                    with self.subTest(
+                        filename=filename,
+                        nav=nav_cfg,
+                        use_directory_urls=use_directory_urls,
+                    ):
+                        cfg = load_config(nav=nav_cfg, use_directory_urls=use_directory_urls)
+                        files = Files(
+                            File(path, cfg.docs_dir, cfg.site_dir, cfg.use_directory_urls)
+                            for path in (filename, 'page2.md', 'sub1/index.md')
+                        )
+                        site_navigation = get_navigation(files, cfg)
+                        homepage, page2, sub1_index = site_navigation.pages
+                        self.assertFalse(homepage.is_top_level)
+                        self.assertTrue(homepage.is_homepage)
+                        self.assertIs(site_navigation.homepage, homepage)
+                        self.assertFalse(page2.is_homepage)
+                        self.assertFalse(sub1_index.is_homepage)
+
     def test_nav_no_directory_urls(self):
         nav_cfg = [
             {'Home': 'index.md'},

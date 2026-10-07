@@ -134,7 +134,7 @@ class Page(StructureItem):
     @property
     def is_homepage(self) -> bool:
         """Evaluates to `True` for the homepage of the site and `False` for all other pages."""
-        return self.is_top_level and self.is_index and self.file.url in ('.', './', 'index.html')
+        return self.is_index and self.file.url in ('.', './', 'index.html')
 
     previous_page: Page | None
     """The [page][mkdocs.structure.pages.Page] object for the previous page or `None`.
